@@ -53,6 +53,10 @@ This file proves results about bipartite simple graphs, including several double
 * `SimpleGraph.between`; the simple graph `G.between s t` is the subgraph of `G` containing edges
   that connect a vertex in the set `s` to a vertex in the set `t`.
 
+* `SimpleGraph.bipartiteDoubleCover`; the simple graph `G.bipartiteDoubleCover` has two vertices
+  `inl v` and `inr v` for each vertex `v` in `G` such that `inl v` (`inr v`) is adjacent to `inr w`
+  (`inl w`) iff `v` is adjacent to `w` in `G`.
+
 ## Implementation notes
 
 For the formulation of double-counting arguments where a bipartite graph is considered as a
