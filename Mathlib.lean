@@ -3316,6 +3316,7 @@ public import Mathlib.Combinatorics.SimpleGraph.Ends.Properties
 public import Mathlib.Combinatorics.SimpleGraph.Extremal.Basic
 public import Mathlib.Combinatorics.SimpleGraph.Extremal.Turan
 public import Mathlib.Combinatorics.SimpleGraph.Extremal.TuranDensity
+public import Mathlib.Combinatorics.SimpleGraph.Extremal.Zarankiewicz
 public import Mathlib.Combinatorics.SimpleGraph.Finite
 public import Mathlib.Combinatorics.SimpleGraph.Finsubgraph
 public import Mathlib.Combinatorics.SimpleGraph.FiveWheelLike
