@@ -633,13 +633,13 @@ def overFin (hc : Fintype.card V = n) : SimpleGraph (Fin n) where
 noncomputable def overFinIso (hc : Fintype.card V = n) : G ≃g G.overFin hc := by
   use Fintype.equivFinOfCardEq hc; simp [overFin]
 
-/-- The isomorphism between `completeBipartiteGraph α β` and
-`completeBipartiteGraph (Fin s) (Fin t)` where `card α = s` and `card β = t`. -/
-noncomputable def completeBipartiteGraph.overFinIso {α β : Type*} [Fintype α] [Fintype β]
-    {s t : ℕ} (hc₁ : Fintype.card α = s) (hc₂ : Fintype.card β = t) :
-    completeBipartiteGraph α β ≃g completeBipartiteGraph (Fin s) (Fin t) where
-  toFun := Sum.map (Fintype.equivFinOfCardEq hc₁) (Fintype.equivFinOfCardEq hc₂)
-  invFun := Sum.map (Fintype.equivFinOfCardEq hc₁).symm (Fintype.equivFinOfCardEq hc₂).symm
+/-- The isomorphism between `completeBipartiteGraph α₁ β₁` and
+`completeBipartiteGraph α₂ β₂ ` where `α₁ ≃ α₂` and `β₁ ≃ β₂`. -/
+noncomputable def completeBipartiteGraph.congr {α₁ α₂ β₁ β₂ : Type*}
+  [Fintype α₁] [Fintype α₂] [Fintype β₂] [Fintype β₂] (hα : α₁ ≃ α₂) (hβ : β₁ ≃ β₂) :
+    completeBipartiteGraph α₁ β₁ ≃g completeBipartiteGraph α₂ β₂ where
+  toFun := Sum.map hα hβ
+  invFun := Sum.map hα.symm hβ.symm
   left_inv _ := by simp
   right_inv _ := by simp
   map_rel_iff' := by simp
