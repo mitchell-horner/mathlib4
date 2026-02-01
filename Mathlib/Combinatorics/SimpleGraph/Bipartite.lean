@@ -454,17 +454,14 @@ section BipartiteDoubleCover
 /-- `bipartiteDoubleCover G` has two vertices `inl v` and `inr v` for each vertex `v` in `G`
 such that `inl v` (`inr v`) is adjacent to `inr w` (`inl w`) iff `v` is adjacent to `w` in `G`. -/
 @[simp] def bipartiteDoubleCover (G : SimpleGraph V) : SimpleGraph (V ⊕ V) where
-  Adj v w := match v, w with
-    | .inl v', .inr w' | .inr v', .inl w' => G.Adj v' w'
-    | _, _ => False
-  symm v w :=  match v, w with
-    | .inl _, .inr _ | .inr _, .inl _ => G.adj_symm
-    | .inl _, .inl _ | .inr _, .inr _ => id
+  Adj
+  | .inl v', .inr w' | .inr v', .inl w' => G.Adj v' w'
+  | _, _ => False
+  symm _ _ := by grind [adj_symm]
 
-instance [h : DecidableRel G.Adj] : DecidableRel G.bipartiteDoubleCover.Adj :=
-  fun v w ↦ match v, w with
-    | .inl _, .inr _ | .inr _, .inl _ => h _ _
-    | .inl _, .inl _ | .inr _, .inr _ => inferInstanceAs (Decidable False)
+instance [h : DecidableRel G.Adj] : DecidableRel G.bipartiteDoubleCover.Adj
+  | .inl _, .inr _ | .inr _, .inl _ => h _ _
+  | .inl _, .inl _ | .inr _, .inr _ => inferInstanceAs (Decidable False)
 
 /-- The bipartite double cover of `G` is contained in the corresponding complete bipartite graph,
 that is, the bipartite double cover of `G` is bipartite. -/
@@ -477,8 +474,8 @@ theorem bipartiteDoubleCover_le : G.bipartiteDoubleCover ≤ completeBipartiteGr
 theorem bipartiteDoubleCover_card_edgeFinset [Fintype V] [DecidableRel G.Adj] :
     #G.bipartiteDoubleCover.edgeFinset = 2 * #G.edgeFinset := by
   rw [two_mul_card_edgeFinset, eq_comm]
-  apply card_bij (fun (v, w) _ ↦ s(.inl v, .inr w)) (fun _ h ↦ by simpa using h)
-    (fun (_, _) _ (_, _) _ ↦ by simp) (fun e he ↦ ?_)
+  apply card_bij (fun (v, w) _ ↦ s(.inl v, .inr w))
+    (fun _ h ↦ by simpa using h) (by grind) (fun e he ↦ ?_)
   induction e with | _ v w
   rw [Set.mem_toFinset, mem_edgeSet] at he
   match v, w with
