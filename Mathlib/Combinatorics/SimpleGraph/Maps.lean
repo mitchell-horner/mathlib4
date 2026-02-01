@@ -619,6 +619,16 @@ def induceUnivIso (G : SimpleGraph V) : G.induce Set.univ ≃g G where
   map_rel_iff' := by simp only [Equiv.Set.univ, Equiv.coe_fn_mk, comap_adj, Embedding.coe_subtype,
                                 implies_true]
 
+/-- The isomorphism between `completeBipartiteGraph α₁ β₁` and
+`completeBipartiteGraph α₂ β₂ ` where `α₁ ≃ α₂` and `β₁ ≃ β₂`. -/
+def completeBipartiteGraph.congr {α₁ α₂ β₁ β₂ : Type*} (hα : α₁ ≃ α₂) (hβ : β₁ ≃ β₂) :
+    completeBipartiteGraph α₁ β₁ ≃g completeBipartiteGraph α₂ β₂ where
+  toFun := Sum.map hα hβ
+  invFun := Sum.map hα.symm hβ.symm
+  left_inv _ := by simp
+  right_inv _ := by simp
+  map_rel_iff' := by simp
+
 section Finite
 
 variable [Fintype V] {n : ℕ}
@@ -632,17 +642,6 @@ def overFin (hc : Fintype.card V = n) : SimpleGraph (Fin n) where
 /-- The isomorphism between `G` and `G.overFin hc`. -/
 noncomputable def overFinIso (hc : Fintype.card V = n) : G ≃g G.overFin hc := by
   use Fintype.equivFinOfCardEq hc; simp [overFin]
-
-/-- The isomorphism between `completeBipartiteGraph α₁ β₁` and
-`completeBipartiteGraph α₂ β₂ ` where `α₁ ≃ α₂` and `β₁ ≃ β₂`. -/
-noncomputable def completeBipartiteGraph.congr {α₁ α₂ β₁ β₂ : Type*}
-  [Fintype α₁] [Fintype α₂] [Fintype β₂] [Fintype β₂] (hα : α₁ ≃ α₂) (hβ : β₁ ≃ β₂) :
-    completeBipartiteGraph α₁ β₁ ≃g completeBipartiteGraph α₂ β₂ where
-  toFun := Sum.map hα hβ
-  invFun := Sum.map hα.symm hβ.symm
-  left_inv _ := by simp
-  right_inv _ := by simp
-  map_rel_iff' := by simp
 
 end Finite
 
