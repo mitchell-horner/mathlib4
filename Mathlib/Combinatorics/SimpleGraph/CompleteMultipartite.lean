@@ -365,7 +365,7 @@ theorem nonempty_of_eq_zero_or_eq_zero (h : r = 0 ∨ t = 0) :
 /-- The parts in a complete equipartite subgraph are pairwise disjoint. -/
 theorem disjoint : (K.parts : Set (Finset V)).Pairwise Disjoint :=
   fun _ h₁ _ h₂ hne ↦ Finset.disjoint_left.mpr fun _ h₁' h₂' ↦
-    (G.loopless _) (K.isCompleteBetween h₁ h₂ hne h₁' h₂')
+    (G.loopless.irrefl _) (K.isCompleteBetween h₁ h₂ hne h₁' h₂')
 
 /-- The finset of vertices in a complete equipartite subgraph. -/
 def verts : Finset V := K.parts.disjiUnion id K.disjoint
@@ -483,7 +483,7 @@ theorem completeEquipartiteGraph_succ_isContained_iff :
           rw [← Finset.card_pos, hs]
           exact Nat.pos_of_ne_zero ht
         absurd hadj s hs_mem hv hv
-        exact G.loopless v
+        exact G.loopless.irrefl v
       · rw [Finset.card_cons, K.card_parts.resolve_right ht]
         exact .inl rfl
       · simp_rw [mem_cons, forall_eq_or_imp]
