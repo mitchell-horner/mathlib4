@@ -208,7 +208,7 @@ variable (R)
 def singleLinearMap [Semiring R] [AddCommMonoid α] [Module R α] (i : m) (j : n) :
     α →ₗ[R] Matrix m n α where
   __ := singleAddMonoidHom i j
-  map_smul' _ _:= smul_single _ _ _ _ |>.symm
+  map_smul' _ _ := smul_single _ _ _ _ |>.symm
 
 section ext
 
@@ -252,18 +252,18 @@ def liftLinear : (m → n → α →ₗ[R] β) ≃ₗ[S] (Matrix m n α →ₗ[R
   LinearEquiv.piCongrRight (fun _ => LinearMap.lsum R _ S) ≪≫ₗ LinearMap.lsum R _ S ≪≫ₗ
     LinearEquiv.congrLeft _ _ (ofLinearEquiv _)
 
+set_option backward.isDefEq.respectTransparency false in
 -- not `simp` to let `liftLinear_single` fire instead
 theorem liftLinear_apply (f : m → n → α →ₗ[R] β) (M : Matrix m n α) :
     liftLinear S f M = ∑ i, ∑ j, f i j (M i j) := by
   simp [liftLinear, map_sum, LinearEquiv.congrLeft]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 theorem liftLinear_single (f : m → n → α →ₗ[R] β) (i : m) (j : n) (a : α) :
     liftLinear S f (Matrix.single i j a) = f i j a := by
   dsimp [liftLinear, -LinearMap.lsum_apply, LinearEquiv.congrLeft, LinearEquiv.piCongrRight]
   simp_rw [of_symm_single, LinearMap.lsum_piSingle]
-
-@[deprecated (since := "2025-08-13")] alias liftLinear_piSingle := liftLinear_single
 
 @[simp]
 theorem liftLinear_comp_singleLinearMap (f : m → n → α →ₗ[R] β) (i : m) (j : n) :

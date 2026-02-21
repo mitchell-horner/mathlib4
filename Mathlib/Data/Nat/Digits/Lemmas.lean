@@ -342,7 +342,7 @@ theorem length_digitsAppend {b : ℕ} (hb : 1 < b) (l : ℕ) (hn : n < b ^ l) :
 theorem lt_of_mem_digitsAppend {b : ℕ} (hb : 1 < b) (l i : ℕ)
     (hi : i ∈ digitsAppend b l n) : i < b := by
   rw [digitsAppend, mem_append, mem_replicate] at hi
-  obtain hi | ⟨_, rfl⟩  := hi
+  obtain hi | ⟨_, rfl⟩ := hi
   · exact digits_lt_base hb hi
   · linarith
 
@@ -384,6 +384,7 @@ theorem bijOn_digitsAppend {b : ℕ} (hb : 1 < b) (l : ℕ) :
     Set.BijOn (digitsAppend b l) {n | n < b ^ l} {L : List ℕ | L.length = l ∧ ∀ x ∈ L, x < b} :=
   (bijOn_ofDigits hb l).symm (setInvOn_digitsAppend_ofDigits hb l).symm
 
+set_option backward.isDefEq.respectTransparency false in
 theorem sum_digits_ofDigits_eq_sum {b : ℕ} (hb : 1 < b) {l : ℕ} {L : List ℕ}
     (hL : L ∈ {L : List ℕ | L.length = l ∧ ∀ x ∈ L, x < b}) :
     (b.digits (ofDigits b L)).sum = L.sum := by
@@ -427,7 +428,7 @@ The bijection `Nat.bijOn_digitsAppend` stated as a bijection between `Finset`.
 This spelling can be helpful for some proofs.
 -/
 theorem _root_.Nat.bijOn_digitsAppend' {b : ℕ} (hb : 1 < b) (l : ℕ) :
-    Set.BijOn (digitsAppend b l) (Finset.range (b ^ l)) (fixedLengthDigits hb l)  := by
+    Set.BijOn (digitsAppend b l) (Finset.range (b ^ l)) (fixedLengthDigits hb l) := by
   rw [fixedLengthDigits, Set.coe_toFinset]
   convert bijOn_digitsAppend hb l
   ext; simp

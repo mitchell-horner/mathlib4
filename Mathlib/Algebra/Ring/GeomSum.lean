@@ -8,6 +8,7 @@ module
 public import Mathlib.Algebra.BigOperators.Intervals
 public import Mathlib.Algebra.BigOperators.Ring.Finset
 public import Mathlib.Algebra.Ring.Opposite
+public import Mathlib.Algebra.Ring.GrindInstances
 
 /-!
 # Partial sums of geometric series in a ring
@@ -213,6 +214,7 @@ theorem dvd_pow_sub_one_of_dvd {r : R} {a b : ℕ} (h : a ∣ b) :
   obtain ⟨n, rfl⟩ := h
   exact pow_one_sub_dvd_pow_mul_sub_one r a n
 
+set_option backward.isDefEq.respectTransparency false in
 theorem dvd_pow_pow_sub_self_of_dvd {r : R} {p a b : ℕ} (h : a ∣ b) :
     r ^ p ^ a - r ∣ r ^ p ^ b - r := by
   by_cases hp₀ : p = 0

@@ -80,13 +80,15 @@ theorem ContDiffAt.contDiffAt_norm_of_smul (h : ContDiffAt ℝ n (‖·‖) (t �
   · apply contDiffAt_zero.2
     exact ⟨univ, univ_mem, continuous_norm.continuousOn⟩
   obtain rfl | ht := eq_or_ne t 0
-  · by_cases! hE : Nontrivial E
-    · rw [zero_smul] at h
-      exact (mt (ContDiffAt.differentiableAt · hn)) (not_differentiableAt_norm_zero E) h |>.elim
-    · rw [eq_const_of_subsingleton (‖·‖) 0]
+  · suffices Subsingleton E by
+      rw [eq_const_of_subsingleton (‖·‖) 0]
       exact contDiffAt_const
+    rw [zero_smul] at h
+    by_contra!
+    exact not_differentiableAt_norm_zero E <| h.differentiableAt hn
   · exact contDiffAt_norm_smul_iff ht |>.2 h
 
+set_option backward.isDefEq.respectTransparency false in
 theorem HasStrictFDerivAt.hasStrictFDerivAt_norm_smul
     (ht : t ≠ 0) (h : HasStrictFDerivAt (‖·‖) f x) :
     HasStrictFDerivAt (‖·‖) ((SignType.sign t : ℝ) • f) (t • x) := by
@@ -111,6 +113,7 @@ theorem HasStrictFDerivAt.hasStrictDerivAt_norm_smul_pos
     HasStrictFDerivAt (‖·‖) f (t • x) := by
   simpa [ht] using h.hasStrictFDerivAt_norm_smul ht.ne'
 
+set_option backward.isDefEq.respectTransparency false in
 theorem HasFDerivAt.hasFDerivAt_norm_smul
     (ht : t ≠ 0) (h : HasFDerivAt (‖·‖) f x) :
     HasFDerivAt (‖·‖) ((SignType.sign t : ℝ) • f) (t • x) := by
@@ -146,10 +149,10 @@ theorem differentiableAt_norm_smul (ht : t ≠ 0) :
 theorem DifferentiableAt.differentiableAt_norm_of_smul (h : DifferentiableAt ℝ (‖·‖) (t • x)) :
     DifferentiableAt ℝ (‖·‖) x := by
   obtain rfl | ht := eq_or_ne t 0
-  · by_cases! hE : Nontrivial E
-    · rw [zero_smul] at h
-      exact not_differentiableAt_norm_zero E h |>.elim
-    · exact (hasFDerivAt_of_subsingleton _ _).differentiableAt
+  · suffices Subsingleton E from (hasFDerivAt_of_subsingleton _ _).differentiableAt
+    rw [zero_smul] at h
+    by_contra!
+    exact not_differentiableAt_norm_zero E h
   · exact differentiableAt_norm_smul ht |>.2 h
 
 theorem DifferentiableAt.fderiv_norm_self {x : E} (h : DifferentiableAt ℝ (‖·‖) x) :
@@ -188,6 +191,7 @@ theorem fderiv_norm_smul_neg (ht : t < 0) :
     fderiv ℝ (‖·‖) (t • x) = -fderiv ℝ (‖·‖) x := by
   simp [fderiv_norm_smul, ht]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem norm_fderiv_norm [Nontrivial E] (h : DifferentiableAt ℝ (‖·‖) x) :
     ‖fderiv ℝ (‖·‖) x‖ = 1 := by
   have : x ≠ 0 := fun hx ↦ not_differentiableAt_norm_zero E (hx ▸ h)
