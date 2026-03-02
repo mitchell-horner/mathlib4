@@ -3,7 +3,9 @@ Copyright (c) 2021 Thomas Browning. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Thomas Browning
 -/
-import Mathlib.GroupTheory.Index
+module
+
+public import Mathlib.GroupTheory.Index
 
 /-!
 # Complements
@@ -24,6 +26,8 @@ In this file we define the complement of a subgroup.
 - `isComplement'_of_coprime` : Subgroups of coprime order are complements.
 -/
 
+@[expose] public section
+
 open Function Set
 open scoped Pointwise
 
@@ -32,8 +36,15 @@ namespace Subgroup
 variable {G : Type*} [Group G] (H K : Subgroup G) (S T : Set G)
 
 /-- `S` and `T` are complements if `(*) : S × T → G` is a bijection.
-  This notion generalizes left transversals, right transversals, and complementary subgroups. -/
-@[to_additive /-- `S` and `T` are complements if `(+) : S × T → G` is a bijection -/]
+This notion generalizes left transversals, right transversals, and complementary subgroups.
+
+If `S` and `T` are `SetLike`s such as `Subgroup`s, see `isComplement_iff_bijective` for a
+more ergonomic way to unfold.
+-/
+@[to_additive /-- `S` and `T` are complements if `(+) : S × T → G` is a bijection
+
+If `S` and `T` are `SetLike`s such as `AddSubgroup`s, see `isComplement_iff_bijective` for a
+more ergonomic way to unfold. -/]
 def IsComplement : Prop :=
   Function.Bijective fun x : S × T => x.1.1 * x.2.1
 
@@ -43,6 +54,12 @@ abbrev IsComplement' :=
   IsComplement (H : Set G) (K : Set G)
 
 variable {H K S T}
+
+/-- The correct way to unfold `IsComplement` for `SetLike`s such as `Subgroup`s -/
+@[to_additive /-- The correct way to unfold `IsComplement` for `SetLike`s such as `AddSubgroup`s -/]
+theorem isComplement_iff_bijective {S : Type*} [SetLike S G] (s t : S) :
+    IsComplement (G := G) s t ↔ Function.Bijective fun x : s × t => (x.1 : G) * (x.2 : G) :=
+  Iff.rfl
 
 @[to_additive]
 theorem isComplement'_def : IsComplement' H K ↔ IsComplement (H : Set G) (K : Set G) :=
@@ -65,9 +82,8 @@ theorem IsComplement'.symm (h : IsComplement' H K) : IsComplement' K H := by
       (fun x => Prod.ext (inv_inv _) (inv_inv _)) fun x => Prod.ext (inv_inv _) (inv_inv _)
   let ψ : G ≃ G := Equiv.mk (fun g : G => g⁻¹) (fun g : G => g⁻¹) inv_inv inv_inv
   suffices hf : (ψ ∘ fun x : H × K => x.1.1 * x.2.1) = (fun x : K × H => x.1.1 * x.2.1) ∘ ϕ by
-    rw [isComplement'_def, IsComplement, ← Equiv.bijective_comp ϕ]
-    apply (congr_arg Function.Bijective hf).mp -- Porting note: This was a `rw` in mathlib3
-    rwa [ψ.comp_bijective]
+    rwa [isComplement'_def, isComplement_iff_bijective, ← Equiv.bijective_comp ϕ, ← hf,
+      ψ.comp_bijective]
   exact funext fun x => mul_inv_rev _ _
 
 @[to_additive]
@@ -147,7 +163,7 @@ lemma IsComplement.nonempty_right (hst : IsComplement S T) : T.Nonempty := by
 @[to_additive] lemma IsComplement.pairwiseDisjoint_smul (hst : IsComplement S T) :
     S.PairwiseDisjoint (· • T) := fun a ha b hb hab ↦ disjoint_iff_forall_ne.2 <| by
   rintro _ ⟨c, hc, rfl⟩ _ ⟨d, hd, rfl⟩
-  exact hst.1.ne (a₁ := (⟨a, ha⟩, ⟨c, hc⟩)) (a₂:= (⟨b, hb⟩, ⟨d, hd⟩)) (by simp [hab])
+  exact hst.1.ne (a₁ := (⟨a, ha⟩, ⟨c, hc⟩)) (a₂ := (⟨b, hb⟩, ⟨d, hd⟩)) (by simp [hab])
 
 @[to_additive AddSubgroup.IsComplement.card_mul_card]
 lemma IsComplement.card_mul_card (h : IsComplement S T) : Nat.card S * Nat.card T = Nat.card G :=
@@ -260,8 +276,7 @@ lemma exists_isComplement_left (H : Subgroup G) (g : G) : ∃ S, IsComplement S 
     QuotientGroup.mk g, Function.update_self (Quotient.mk'' g) g Quotient.out⟩
   by_cases hq : q = Quotient.mk'' g
   · exact hq.symm ▸ congr_arg _ (Function.update_self (Quotient.mk'' g) g Quotient.out)
-  · refine Function.update_of_ne ?_ g Quotient.out ▸ q.out_eq'
-    exact hq
+  · simp [Function.update, dif_neg hq, q.out_eq']
 
 @[to_additive]
 lemma exists_isComplement_right (H : Subgroup G) (g : G) :
@@ -271,9 +286,9 @@ lemma exists_isComplement_right (H : Subgroup G) (g : G) :
     Quotient.mk'' g, Function.update_self (Quotient.mk'' g) g Quotient.out⟩
   by_cases hq : q = Quotient.mk'' g
   · exact hq.symm ▸ congr_arg _ (Function.update_self (Quotient.mk'' g) g Quotient.out)
-  · refine Function.update_of_ne ?_ g Quotient.out ▸ q.out_eq'
-    exact hq
+  · simp [Function.update, dif_neg hq, q.out_eq']
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Given two subgroups `H' ⊆ H`, there exists a left transversal to `H'` inside `H`. -/
 @[to_additive /-- Given two subgroups `H' ⊆ H`, there exists a transversal to `H'` inside `H` -/]
 lemma exists_left_transversal_of_le {H' H : Subgroup G} (h : H' ≤ H) :
@@ -290,6 +305,7 @@ lemma exists_left_transversal_of_le {H' H : Subgroup G} (h : H' ≤ H) :
     refine congr_arg₂ (· * ·) ?_ ?_ <;>
       exact Nat.card_congr (Equiv.Set.image _ _ <| subtype_injective H).symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Given two subgroups `H' ⊆ H`, there exists a right transversal to `H'` inside `H`. -/
 @[to_additive /-- Given two subgroups `H' ⊆ H`, there exists a transversal to `H'` inside `H` -/]
 lemma exists_right_transversal_of_le {H' H : Subgroup G} (h : H' ≤ H) :
@@ -582,7 +598,7 @@ theorem smul_toLeftFun (f : F) (S : H.LeftTransversal) (g : G) :
 
 @[to_additive]
 theorem smul_leftQuotientEquiv (f : F) (S : H.LeftTransversal) (q : G ⧸ H) :
-    f • (S.2.leftQuotientEquiv  q : G) = (f • S).2.leftQuotientEquiv (f • q) :=
+    f • (S.2.leftQuotientEquiv q : G) = (f • S).2.leftQuotientEquiv (f • q) :=
   Quotient.inductionOn' q fun g => smul_toLeftFun f S g
 
 @[to_additive]
@@ -600,6 +616,7 @@ instance : Inhabited H.LeftTransversal :=
 instance : Inhabited H.RightTransversal :=
   ⟨⟨Set.range Quotient.out, isComplement_range_right Quotient.out_eq'⟩⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem IsComplement'.isCompl (h : IsComplement' H K) : IsCompl H K := by
   refine
     ⟨disjoint_iff_inf_le.mpr fun g ⟨p, q⟩ =>
@@ -614,6 +631,7 @@ theorem IsComplement'.isCompl (h : IsComplement' H K) : IsCompl H K := by
 theorem IsComplement'.sup_eq_top (h : IsComplement' H K) : H ⊔ K = ⊤ :=
   h.isCompl.sup_eq_top
 
+set_option backward.isDefEq.respectTransparency false in
 theorem IsComplement'.disjoint (h : IsComplement' H K) : Disjoint H K :=
   h.isCompl.disjoint
 
@@ -636,18 +654,21 @@ theorem IsComplement'.card_mul (h : IsComplement' H K) :
     Nat.card H * Nat.card K = Nat.card G :=
   IsComplement.card_mul h
 
+set_option backward.isDefEq.respectTransparency false in
 theorem isComplement'_of_disjoint_and_mul_eq_univ (h1 : Disjoint H K)
     (h2 : ↑H * ↑K = (Set.univ : Set G)) : IsComplement' H K := by
   refine ⟨mul_injective_of_disjoint h1, fun g => ?_⟩
   obtain ⟨h, hh, k, hk, hg⟩ := Set.eq_univ_iff_forall.mp h2 g
   exact ⟨(⟨h, hh⟩, ⟨k, hk⟩), hg⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem isComplement'_of_card_mul_and_disjoint [Finite G]
     (h1 : Nat.card H * Nat.card K = Nat.card G) (h2 : Disjoint H K) :
     IsComplement' H K :=
   (Nat.bijective_iff_injective_and_card _).mpr
     ⟨mul_injective_of_disjoint h2, (Nat.card_prod H K).trans h1⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem isComplement'_iff_card_mul_and_disjoint [Finite G] :
     IsComplement' H K ↔ Nat.card H * Nat.card K = Nat.card G ∧ Disjoint H K :=
   ⟨fun h => ⟨h.card_mul, h.disjoint⟩, fun h => isComplement'_of_card_mul_and_disjoint h.1 h.2⟩

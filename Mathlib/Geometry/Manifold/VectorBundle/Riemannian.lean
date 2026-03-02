@@ -3,9 +3,11 @@ Copyright (c) 2025 Sébastien Gouëzel. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sébastien Gouëzel
 -/
-import Mathlib.Geometry.Manifold.VectorBundle.Hom
-import Mathlib.Geometry.Manifold.VectorBundle.MDifferentiable
-import Mathlib.Topology.VectorBundle.Riemannian
+module
+
+public import Mathlib.Geometry.Manifold.VectorBundle.Hom
+public import Mathlib.Geometry.Manifold.VectorBundle.MDifferentiable
+public import Mathlib.Topology.VectorBundle.Riemannian
 
 /-! # Riemannian vector bundles
 
@@ -16,7 +18,7 @@ We introduce a typeclass `[IsContMDiffRiemannianBundle IB n F E]` registering th
 Under this assumption, we show that the scalar product of two smooth maps into the same fibers of
 the bundle is a smooth function.
 
-If the fibers of a bundle `E` have a preexisting topology (like the tangent bundle), one can not
+If the fibers of a bundle `E` have a preexisting topology (like the tangent bundle), one cannot
 assume additionally `[∀ b, InnerProductSpace ℝ (E b)]` as this would create diamonds. Instead,
 use `[RiemannianBundle E]`, which endows the fibers with a scalar product while ensuring that
 there is no diamond (for this, the `Bundle` scope should be open). We provide a
@@ -38,6 +40,8 @@ variable
 ```
 -/
 
+@[expose] public section
+
 open Manifold Bundle ContinuousLinearMap ENat Bornology
 open scoped ContDiff Topology
 
@@ -56,7 +60,7 @@ local notation "⟪" x ", " y "⟫" => inner ℝ x y
 
 variable (IB n F E) in
 /-- Consider a real vector bundle in which each fiber is endowed with a scalar product.
-We that the bundle is Riemannian if the scalar product depends smoothly on the base point.
+We say that the bundle is Riemannian if the scalar product depends smoothly on the base point.
 This assumption is spelled `IsContMDiffRiemannianBundle IB n F E` where `IB` is the model space of
 the base, `n` is the smoothness, `F` is the model fiber, and `E : B → Type*` is the bundle. -/
 class IsContMDiffRiemannianBundle : Prop where
@@ -74,6 +78,7 @@ instance {a : WithTop ℕ∞} [IsContMDiffRiemannianBundle IB ∞ F E] [h : LEIn
     IsContMDiffRiemannianBundle IB a F E :=
   IsContMDiffRiemannianBundle.of_le h.out
 
+set_option backward.isDefEq.respectTransparency false in
 instance {a : WithTop ℕ∞} [IsContMDiffRiemannianBundle IB ω F E] :
     IsContMDiffRiemannianBundle IB a F E :=
   IsContMDiffRiemannianBundle.of_le le_top
@@ -84,6 +89,7 @@ instance [IsContMDiffRiemannianBundle IB 1 F E] : IsContMDiffRiemannianBundle IB
 instance [IsContMDiffRiemannianBundle IB 2 F E] : IsContMDiffRiemannianBundle IB 1 F E :=
   IsContMDiffRiemannianBundle.of_le one_le_two
 
+set_option backward.isDefEq.respectTransparency false in
 instance [IsContMDiffRiemannianBundle IB 3 F E] : IsContMDiffRiemannianBundle IB 2 F E :=
   IsContMDiffRiemannianBundle.of_le (n := 3) (by norm_cast)
 
@@ -91,6 +97,7 @@ section Trivial
 
 variable {F₁ : Type*} [NormedAddCommGroup F₁] [InnerProductSpace ℝ F₁]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A trivial vector bundle, in which the model fiber has a scalar product,
 is a Riemannian bundle. -/
 instance : IsContMDiffRiemannianBundle IB n F₁ (Bundle.Trivial B F₁) := by
@@ -180,7 +187,8 @@ lemma MDifferentiableWithinAt.inner_bundle
   have : MDifferentiableWithinAt IM (IB.prod 𝓘(ℝ))
       (fun m ↦ TotalSpace.mk' ℝ (E := Bundle.Trivial B ℝ) (b m) (g (b m) (v m) (w m))) s x := by
     apply MDifferentiableWithinAt.clm_bundle_apply₂ (F₁ := F) (F₂ := F)
-    · exact MDifferentiableAt.comp_mdifferentiableWithinAt x (g_smooth.mdifferentiableAt le_rfl) hb
+    · exact MDifferentiableAt.comp_mdifferentiableWithinAt x
+        (g_smooth.mdifferentiableAt one_ne_zero) hb
     · exact hv
     · exact hw
   simp only [mdifferentiableWithinAt_totalSpace] at this
@@ -254,6 +262,7 @@ def ContMDiffRiemannianMetric.toRiemannianMetric
     (g : ContMDiffRiemannianMetric IB n F E) : RiemannianMetric E :=
   g.toContinuousRiemannianMetric.toRiemannianMetric
 
+set_option backward.isDefEq.respectTransparency false in
 instance (g : ContMDiffRiemannianMetric IB n F E) :
     letI : RiemannianBundle E := ⟨g.toRiemannianMetric⟩
     IsContMDiffRiemannianBundle IB n F E :=

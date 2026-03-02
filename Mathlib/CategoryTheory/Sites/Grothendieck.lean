@@ -3,11 +3,13 @@ Copyright (c) 2020 Bhavik Mehta, Edward Ayers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bhavik Mehta, Edward Ayers
 -/
-import Mathlib.CategoryTheory.Sites.Sieves
-import Mathlib.CategoryTheory.Limits.Shapes.Multiequalizer
-import Mathlib.CategoryTheory.Category.Preorder
-import Mathlib.Order.Copy
-import Mathlib.Data.Set.Subsingleton
+module
+
+public import Mathlib.CategoryTheory.Sites.Sieves
+public import Mathlib.CategoryTheory.Limits.Shapes.Multiequalizer
+public import Mathlib.CategoryTheory.Category.Preorder
+public import Mathlib.Order.Copy
+public import Mathlib.Data.Set.Subsingleton
 
 /-!
 # Grothendieck topologies
@@ -48,6 +50,8 @@ This is so that we can produce a bijective correspondence between Grothendieck t
 small category and Lawvere-Tierney topologies on its presheaf topos, as well as the equivalence
 between Grothendieck topoi and left exact reflective subcategories of presheaf toposes.
 -/
+
+@[expose] public section
 
 
 universe v₁ u₁ v u
@@ -106,12 +110,12 @@ theorem mem_sieves_iff_coe : S ∈ J.sieves X ↔ S ∈ J X :=
   Iff.rfl
 
 /-- Also known as the maximality axiom. -/
-@[simp]
+@[simp, grind .]
 theorem top_mem (X : C) : ⊤ ∈ J X :=
   J.top_mem' X
 
 /-- Also known as the stability axiom. -/
-@[simp]
+@[simp, grind .]
 theorem pullback_stable (f : Y ⟶ X) (hS : S ∈ J X) : S.pullback f ∈ J Y :=
   J.pullback_stable' f hS
 
@@ -123,11 +127,35 @@ lemma pullback_mem_iff_of_isIso {i : X ⟶ Y} [IsIso i] {S : Sieve Y} :
   convert J.pullback_stable (inv i) H
   rw [← Sieve.pullback_comp, IsIso.inv_hom_id, Sieve.pullback_id]
 
+@[grind .]
 theorem transitive (hS : S ∈ J X) (R : Sieve X) (h : ∀ ⦃Y⦄ ⦃f : Y ⟶ X⦄, S f → R.pullback f ∈ J Y) :
     R ∈ J X :=
   J.transitive' hS R h
 
 theorem covering_of_eq_top : S = ⊤ → S ∈ J X := fun h => h.symm ▸ J.top_mem X
+
+/-- Given a `GrothendieckTopology` and a set of sieves `s` that is equal, form a new
+`GrothendieckTopology` whose set of sieves is definitionally equal to `s`. -/
+def copy (J : GrothendieckTopology C) (s : ∀ X : C, Set (Sieve X)) (h : J.sieves = s) :
+    GrothendieckTopology C where
+  sieves := s
+  top_mem' := h ▸ J.top_mem'
+  pullback_stable' := h ▸ J.pullback_stable'
+  transitive' := h ▸ J.transitive'
+
+@[simp]
+theorem sieves_copy {J : GrothendieckTopology C} {s : ∀ X : C, Set (Sieve X)} {h : J.sieves = s} :
+    (J.copy s h).sieves = s :=
+  rfl
+
+@[simp]
+theorem coe_copy {J : GrothendieckTopology C} {s : ∀ X : C, Set (Sieve X)} {h : J.sieves = s} :
+    ⇑(J.copy s h) = s :=
+  rfl
+
+theorem copy_eq {J : GrothendieckTopology C} {s : ∀ X : C, Set (Sieve X)} {h : J.sieves = s} :
+    J.copy s h = J :=
+  GrothendieckTopology.ext h.symm
 
 /-- If `S` is a subset of `R`, and `S` is covering, then `R` is covering as well.
 
@@ -135,7 +163,7 @@ See also discussion after [MM92] Chapter III, Section 2, Definition 1. -/
 @[stacks 00Z5 "(2)"]
 theorem superset_covering (Hss : S ≤ R) (sjx : S ∈ J X) : R ∈ J X := by
   apply J.transitive sjx R fun Y f hf => _
-  intros Y f hf
+  intro Y f hf
   apply covering_of_eq_top
   rw [← top_le_iff, ← S.pullback_eq_top_of_mem hf]
   apply Sieve.pullback_monotone _ Hss
@@ -146,7 +174,7 @@ See also [MM92] Chapter III, Section 2, Definition 1 (iv). -/
 @[stacks 00Z5 "(1)"]
 theorem intersection_covering (rj : R ∈ J X) (sj : S ∈ J X) : R ⊓ S ∈ J X := by
   apply J.transitive rj _ fun Y f Hf => _
-  intros Y f hf
+  intro Y f hf
   rw [Sieve.pullback_inter, R.pullback_eq_top_of_mem hf]
   simp [sj]
 
@@ -324,7 +352,7 @@ theorem top_covers (S : Sieve X) (f : Y ⟶ X) : (⊤ : GrothendieckTopology C).
 See https://ncatlab.org/nlab/show/dense+topology, or [MM92] Chapter III, Section 2, example (e).
 -/
 def dense : GrothendieckTopology C where
-  sieves X S := ∀ {Y : C} (f : Y ⟶ X), ∃ (Z : _) (g : Z ⟶ Y), S (g ≫ f)
+  sieves X := {S | ∀ {Y : C} (f : Y ⟶ X), ∃ (Z : _) (g : Z ⟶ Y), S (g ≫ f)}
   top_mem' _ Y _ := ⟨Y, 𝟙 Y, ⟨⟩⟩
   pullback_stable' := by
     intro X Y S h H Z f
@@ -356,7 +384,7 @@ For the pullback stability condition, we need the right Ore condition to hold.
 See https://ncatlab.org/nlab/show/atomic+site, or [MM92] Chapter III, Section 2, example (f).
 -/
 def atomic (hro : RightOreCondition C) : GrothendieckTopology C where
-  sieves X S := ∃ (Y : _) (f : Y ⟶ X), S f
+  sieves X := {S | ∃ (Y : _) (f : Y ⟶ X), S f}
   top_mem' _ := ⟨_, 𝟙 _, ⟨⟩⟩
   pullback_stable' := by
     rintro X Y S h ⟨Z, f, hf⟩
@@ -371,7 +399,6 @@ def atomic (hro : RightOreCondition C) : GrothendieckTopology C where
 
 /-- `J.Cover X` denotes the poset of covers of `X` with respect to the
 Grothendieck topology `J`. -/
--- Porting note: Lean 3 inferred `Type max u v`, Lean 4 by default gives `Type (max 0 u v)`
 def Cover (X : C) : Type max u v :=
   { S : Sieve X // S ∈ J X }
 deriving Preorder

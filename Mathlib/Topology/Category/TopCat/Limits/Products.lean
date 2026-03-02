@@ -3,17 +3,22 @@ Copyright (c) 2017 Kim Morrison. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Patrick Massot, Kim Morrison, Mario Carneiro, Andrew Yang
 -/
-import Mathlib.Topology.Category.TopCat.EpiMono
-import Mathlib.Topology.Category.TopCat.Limits.Basic
-import Mathlib.CategoryTheory.Limits.Shapes.Products
-import Mathlib.CategoryTheory.Limits.ConcreteCategory.Basic
-import Mathlib.Data.Set.Subsingleton
-import Mathlib.Tactic.CategoryTheory.Elementwise
-import Mathlib.Topology.Homeomorph.Lemmas
+module
+
+public import Mathlib.Topology.Category.TopCat.EpiMono
+public import Mathlib.Topology.Category.TopCat.Limits.Basic
+public import Mathlib.CategoryTheory.Limits.Shapes.Products
+public import Mathlib.CategoryTheory.Limits.ConcreteCategory.Basic
+public import Mathlib.Data.Set.Subsingleton
+public import Mathlib.Tactic.CategoryTheory.Elementwise
+public import Mathlib.Topology.Homeomorph.Lemmas
+public import Mathlib.Tactic.ApplyFun
 
 /-!
 # Products and coproducts in the category of topological spaces
 -/
+
+@[expose] public section
 
 open CategoryTheory Limits Set TopologicalSpace Topology
 
@@ -32,8 +37,9 @@ abbrev piπ {ι : Type v} (α : ι → TopCat.{max v u}) (i : ι) : TopCat.of (�
 /-- The explicit fan of a family of topological spaces given by the pi type. -/
 @[simps! pt π_app]
 def piFan {ι : Type v} (α : ι → TopCat.{max v u}) : Fan α :=
-  Fan.mk (TopCat.of (∀ i, α i)) (piπ.{v,u} α)
+  Fan.mk (TopCat.of (∀ i, α i)) (piπ.{v, u} α)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The constructed fan is indeed a limit -/
 def piFanIsLimit {ι : Type v} (α : ι → TopCat.{max v u}) : IsLimit (piFan α) where
   lift S := ofHom
@@ -52,6 +58,7 @@ equipped with the product topology.
 def piIsoPi {ι : Type v} (α : ι → TopCat.{max v u}) : ∏ᶜ α ≅ TopCat.of (∀ i, α i) :=
   (limit.isLimit _).conePointUniqueUpToIso (piFanIsLimit.{v, u} α)
 
+set_option backward.isDefEq.respectTransparency false in
 @[reassoc (attr := simp)]
 theorem piIsoPi_inv_π {ι : Type v} (α : ι → TopCat.{max v u}) (i : ι) :
     (piIsoPi α).inv ≫ Pi.π α i = piπ α i := by simp [piIsoPi]
@@ -61,10 +68,7 @@ theorem piIsoPi_inv_π_apply {ι : Type v} (α : ι → TopCat.{max v u}) (i : �
   ConcreteCategory.congr_hom (piIsoPi_inv_π α i) x
 
 theorem piIsoPi_hom_apply {ι : Type v} (α : ι → TopCat.{max v u}) (i : ι)
-    (x : (∏ᶜ α : TopCat.{max v u})) : (piIsoPi α).hom x i = (Pi.π α i :) x := by
-  have := piIsoPi_inv_π α i
-  rw [Iso.inv_comp_eq] at this
-  exact ConcreteCategory.congr_hom this x
+    (x : (∏ᶜ α : TopCat.{max v u})) : (piIsoPi α).hom x i = (Pi.π α i :) x := rfl
 
 /-- The inclusion to the coproduct as a bundled continuous map. -/
 abbrev sigmaι {ι : Type v} (α : ι → TopCat.{max v u}) (i : ι) : α i ⟶ TopCat.of (Σ i, α i) := by
@@ -97,6 +101,7 @@ def sigmaCofanIsColimit {ι : Type v} (β : ι → TopCat.{max v u}) : IsColimit
 def sigmaIsoSigma {ι : Type v} (α : ι → TopCat.{max v u}) : ∐ α ≅ TopCat.of (Σ i, α i) :=
   (colimit.isColimit _).coconePointUniqueUpToIso (sigmaCofanIsColimit.{v, u} α)
 
+set_option backward.isDefEq.respectTransparency false in
 @[reassoc (attr := simp)]
 theorem sigmaIsoSigma_hom_ι {ι : Type v} (α : ι → TopCat.{max v u}) (i : ι) :
     Sigma.ι α i ≫ (sigmaIsoSigma α).hom = sigmaι α i := by simp [sigmaIsoSigma]
@@ -126,9 +131,7 @@ def prodBinaryFan (X Y : TopCat.{u}) : BinaryFan X Y :=
 
 /-- The constructed binary fan is indeed a limit -/
 def prodBinaryFanIsLimit (X Y : TopCat.{u}) : IsLimit (prodBinaryFan X Y) where
-  lift := fun S : BinaryFan X Y => ofHom {
-    toFun := fun s => (S.fst s, S.snd s)
-    continuous_toFun := by continuity }
+  lift := fun S : BinaryFan X Y => ofHom { toFun s := (S.fst s, S.snd s) }
   fac := by
     rintro S (_ | _) <;> {dsimp; ext; rfl}
   uniq := by
@@ -149,12 +152,14 @@ equipped with the product topology.
 def prodIsoProd (X Y : TopCat.{u}) : X ⨯ Y ≅ TopCat.of (X × Y) :=
   (limit.isLimit _).conePointUniqueUpToIso (prodBinaryFanIsLimit X Y)
 
+set_option backward.isDefEq.respectTransparency false in
 @[reassoc (attr := simp)]
 theorem prodIsoProd_hom_fst (X Y : TopCat.{u}) :
     (prodIsoProd X Y).hom ≫ prodFst = Limits.prod.fst := by
   simp [← Iso.eq_inv_comp, prodIsoProd]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 @[reassoc (attr := simp)]
 theorem prodIsoProd_hom_snd (X Y : TopCat.{u}) :
     (prodIsoProd X Y).hom ≫ prodSnd = Limits.prod.snd := by
@@ -164,10 +169,7 @@ theorem prodIsoProd_hom_snd (X Y : TopCat.{u}) :
 -- Note that `(x : X ⨯ Y)` would mean `(x : ↑X × ↑Y)` below:
 theorem prodIsoProd_hom_apply {X Y : TopCat.{u}} (x : ↑(X ⨯ Y)) :
     (prodIsoProd X Y).hom x = ((Limits.prod.fst : X ⨯ Y ⟶ _) x,
-    (Limits.prod.snd : X ⨯ Y ⟶ _) x) := by
-  ext
-  · exact ConcreteCategory.congr_hom (prodIsoProd_hom_fst X Y) x
-  · exact ConcreteCategory.congr_hom (prodIsoProd_hom_snd X Y) x
+    (Limits.prod.snd : X ⨯ Y ⟶ _) x) := rfl
 
 @[reassoc (attr := simp), elementwise]
 theorem prodIsoProd_inv_fst (X Y : TopCat.{u}) :
@@ -245,6 +247,7 @@ def binaryCofanIsColimit (X Y : TopCat.{u}) : IsColimit (TopCat.binaryCofan X Y)
     ext (x | x)
     exacts [ConcreteCategory.congr_hom h₁ x, ConcreteCategory.congr_hom h₂ x]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem binaryCofan_isColimit_iff {X Y : TopCat} (c : BinaryCofan X Y) :
     Nonempty (IsColimit c) ↔
       IsOpenEmbedding c.inl ∧ IsOpenEmbedding c.inr ∧ IsCompl (range c.inl) (range c.inr) := by
@@ -307,7 +310,7 @@ theorem binaryCofan_isColimit_iff {X Y : TopCat} (c : BinaryCofan X Y) :
       · intro T f g
         ext x
         dsimp
-        rw [dif_pos]
+        rw [dif_pos ⟨x, rfl⟩]
         conv_lhs => rw [Equiv.ofInjective_symm_apply]
       · intro T f g
         ext x

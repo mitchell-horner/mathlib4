@@ -3,9 +3,10 @@ Copyright (c) 2019 Amelia Livingston. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Amelia Livingston, Bryan Gin-ge Chen, Patrick Massot, Wen Yang, Johan Commelin
 -/
+module
 
-import Mathlib.Data.Set.Finite.Range
-import Mathlib.Order.Partition.Finpartition
+public import Mathlib.Data.Set.Finite.Range
+public import Mathlib.Order.Partition.Finpartition
 
 /-!
 # Equivalence relations: partitions
@@ -32,6 +33,8 @@ usable.
 
 setoid, equivalence, iseqv, relation, equivalence relation, partition, equivalence class
 -/
+
+@[expose] public section
 
 
 namespace Setoid
@@ -90,8 +93,6 @@ theorem classes_inj {r₁ r₂ : Setoid α} : r₁ = r₂ ↔ r₁.classes = r�
 /-- The empty set is not an equivalence class. -/
 theorem empty_notMem_classes {r : Setoid α} : ∅ ∉ r.classes := fun ⟨y, hy⟩ =>
   Set.notMem_empty y <| hy.symm ▸ r.refl' y
-
-@[deprecated (since := "2025-05-23")] alias empty_not_mem_classes := empty_notMem_classes
 
 /-- Equivalence classes partition the type. -/
 theorem classes_eqv_classes {r : Setoid α} (a) : ∃! b ∈ r.classes, a ∈ b :=
@@ -167,8 +168,8 @@ noncomputable def quotientEquivClasses (r : Setoid α) : Quotient r ≃ Setoid.c
   apply Equiv.ofBijective (Quot.lift f f_respects_relation)
   constructor
   · intro (q_a : Quotient r) (q_b : Quotient r) h_eq
-    induction' q_a using Quotient.ind with a
-    induction' q_b using Quotient.ind with b
+    induction q_a using Quotient.ind with | _ a
+    induction q_b using Quotient.ind with | _ b
     simp only [f, Quotient.lift_mk, Subtype.ext_iff] at h_eq
     apply Quotient.sound
     change a ∈ { x | r x b }
@@ -181,7 +182,7 @@ noncomputable def quotientEquivClasses (r : Setoid α) : Quotient r ≃ Setoid.c
 @[simp]
 lemma quotientEquivClasses_mk_eq (r : Setoid α) (a : α) :
     (quotientEquivClasses r (Quotient.mk r a) : Set α) = { x | r x a } :=
-  (@Subtype.ext_iff_val _ _ _ ⟨{ x | r x a }, Setoid.mem_classes r a⟩).mp rfl
+  (@Subtype.ext_iff _ _ _ ⟨{ x | r x a }, Setoid.mem_classes r a⟩).mp rfl
 
 section Partition
 
@@ -201,6 +202,7 @@ theorem IsPartition.pairwiseDisjoint {c : Set (Set α)} (hc : IsPartition c) :
     c.PairwiseDisjoint id :=
   eqv_classes_disjoint hc.2
 
+set_option backward.isDefEq.respectTransparency false in
 lemma _root_.Set.PairwiseDisjoint.isPartition_of_exists_of_ne_empty {α : Type*} {s : Set (Set α)}
     (h₁ : s.PairwiseDisjoint id) (h₂ : ∀ a : α, ∃ x ∈ s, a ∈ x) (h₃ : ∅ ∉ s) :
     Setoid.IsPartition s := by
@@ -242,14 +244,13 @@ instance Partition.le : LE (Subtype (@IsPartition α)) :=
 /-- Defining a partial order on partitions as the partial order on their induced
 equivalence relations. -/
 instance Partition.partialOrder : PartialOrder (Subtype (@IsPartition α)) where
-  le := (· ≤ ·)
   lt x y := x ≤ y ∧ ¬y ≤ x
   le_refl _ := @le_refl (Setoid α) _ _
   le_trans _ _ _ := @le_trans (Setoid α) _ _ _ _
   lt_iff_le_not_ge _ _ := Iff.rfl
   le_antisymm x y hx hy := by
     let h := @le_antisymm (Setoid α) _ _ _ hx hy
-    rw [Subtype.ext_iff_val, ← classes_mkClasses x.1 x.2, ← classes_mkClasses y.1 y.2, h]
+    rw [Subtype.ext_iff, ← classes_mkClasses x.1 x.2, ← classes_mkClasses y.1 y.2, h]
 
 variable (α) in
 /-- The order-preserving bijection between equivalence relations on a type `α`, and
@@ -258,7 +259,7 @@ protected def Partition.orderIso : Setoid α ≃o { C : Set (Set α) // IsPartit
   toFun r := ⟨r.classes, empty_notMem_classes, classes_eqv_classes⟩
   invFun C := mkClasses C.1 C.2.2
   left_inv := mkClasses_classes
-  right_inv C := by rw [Subtype.ext_iff_val, ← classes_mkClasses C.1 C.2]
+  right_inv C := by rw [Subtype.ext_iff, ← classes_mkClasses C.1 C.2]
   map_rel_iff' {r s} := by
     conv_rhs => rw [← mkClasses_classes r, ← mkClasses_classes s]
     rfl
@@ -443,11 +444,12 @@ lemma piecewise_apply {β : Type*} {f : ι → α → β} (x : α) : hs.piecewis
 
 open Function
 
+variable {β : Type*} {f : ι → α → β}
+
 /-- A family of injective functions with pairwise disjoint
 domains and pairwise disjoint ranges can be glued together
 to form an injective function. -/
-theorem piecewise_inj {β : Type*} {f : ι → α → β}
-    (h_injOn : ∀ i, InjOn (f i) (s i))
+theorem piecewise_inj (h_injOn : ∀ i, InjOn (f i) (s i))
     (h_disjoint : PairwiseDisjoint (univ : Set ι) fun i => (f i) '' (s i)) :
     Injective (piecewise hs f) := by
   intro x y h
@@ -461,23 +463,64 @@ theorem piecewise_inj {β : Type*} {f : ι → α → β}
 /-- A family of bijective functions with pairwise disjoint
 domains and pairwise disjoint ranges can be glued together
 to form a bijective function. -/
-theorem piecewise_bij {β : Type*} {f : ι → α → β}
-    {t : ι → Set β} (ht : IndexedPartition t)
+theorem piecewise_bij {t : ι → Set β} (ht : IndexedPartition t)
     (hf : ∀ i, BijOn (f i) (s i) (t i)) :
     Bijective (piecewise hs f) := by
   set g := piecewise hs f with hg
-  have hg_bij : ∀ i, BijOn g (s i) (t i) := by
-    intro i
-    refine BijOn.congr (hf i) ?_
-    intro x hx
+  have hg_bij (i) : BijOn g (s i) (t i) := by
+    refine (hf i).congr fun x hx => ?_
     rw [hg, piecewise_apply, hs.mem_iff_index_eq.mp hx]
   have hg_inj : InjOn g (⋃ i, s i) := by
-    refine injOn_of_injective ?_
-    refine piecewise_inj hs (fun i ↦ BijOn.injOn (hf i)) ?h_disjoint
+    refine injOn_of_injective (piecewise_inj hs (fun i ↦ BijOn.injOn (hf i)) ?_)
     simp only [fun i ↦ BijOn.image_eq (hf i)]
     rintro i - j - hij
     exact ht.disjoint hij
-  rw [bijective_iff_bijOn_univ, ← hs.iUnion, ← ht.iUnion]
+  rw [← bijOn_univ, ← hs.iUnion, ← ht.iUnion]
   exact bijOn_iUnion hg_bij hg_inj
+
+theorem piecewise_preimage (f : ι → α → β) (t : Set β) :
+    hs.piecewise f ⁻¹' t = ⋃ i, s i ∩ (f i ⁻¹' t) := by
+  refine ext fun x => ⟨fun hx => ?_, fun ⟨a, ⟨i, hi⟩, ha⟩ => ?_⟩
+  · rw [mem_preimage, piecewise_apply, ← mem_preimage] at hx
+    exact mem_iUnion_of_mem (hs.index x) (mem_inter (hs.mem_index x) hx)
+  · rw [← hi, ← (mem_iff_index_eq hs).mp ha.1] at ha
+    simp_all [piecewise_apply]
+
+theorem range_piecewise (f : ι → α → β) : range (hs.piecewise f) = ⋃ i, f i '' s i := by
+  refine ext fun x => ⟨?_, fun ⟨t, ⟨i, hi⟩, ht⟩ ↦ ?_⟩
+  · rintro ⟨x, rfl⟩
+    exact mem_iUnion_of_mem (hs.index x) ⟨x, hs.mem_index x, rfl⟩
+  · simp only [← hi, mem_image] at ht
+    obtain ⟨a, ha1, ha2⟩ := ht
+    refine ⟨a, ?_⟩
+    simp only [hs.mem_iff_index_eq] at ha1
+    simpa [hs.mem_iff_index_eq, ← ha1] using ha2
+
+theorem range_piecewise_subset (f : ι → α → β) : range (hs.piecewise f) ⊆ ⋃ i, range (f i) :=
+  fun x ⟨y, hy⟩ => by simpa [IndexedPartition.piecewise_apply] using ⟨hs.index y, y, hy⟩
+
+/-- Given a collections of sets `s : ι → Set α` that forms an indexed partition, we can group
+some of the sets to obtain a coarser partition. -/
+noncomputable def coarserPartition (hs : IndexedPartition s) {κ : Type*} (g : ι → κ)
+    (hg : g.Surjective) :
+    IndexedPartition (fun k : κ => ⋃ i ∈ g ⁻¹' {k}, s i) where
+  eq_of_mem {x _i _j} hxi hxj := by
+    obtain ⟨a, ⟨c, hc⟩, ha⟩ := hxi
+    obtain ⟨b, ⟨d, hd⟩, hb⟩ := hxj
+    grind =>
+      instantiate [mem_iUnion]
+      have hb : x ∈ s d
+      have ha : x ∈ s c
+      have : c = d := hs.eq_of_mem ha hb
+      finish
+  some k := hs.some ((singleton_nonempty k).preimage hg).some
+  some_mem k := by
+    refine mem_iUnion_of_mem ((singleton_nonempty k).preimage hg).some ?_
+    simp only [mem_preimage, mem_singleton_iff, mem_iUnion, exists_prop]
+    constructor
+    · simpa using ((singleton_nonempty k).preimage hg).some_mem
+    · exact hs.some_mem ((singleton_nonempty k).preimage hg).some
+  index x := g (hs.index x)
+  mem_index x := mem_iUnion_of_mem (hs.index x) (by simp [hs.mem_index])
 
 end IndexedPartition

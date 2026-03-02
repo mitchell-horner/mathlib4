@@ -3,10 +3,12 @@ Copyright (c) 2023 Winston Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Winston Yin
 -/
-import Mathlib.Analysis.ODE.Gronwall
-import Mathlib.Analysis.ODE.PicardLindelof
-import Mathlib.Geometry.Manifold.IntegralCurve.Transform
-import Mathlib.Geometry.Manifold.IsManifold.InteriorBoundary
+module
+
+public import Mathlib.Analysis.ODE.Gronwall
+public import Mathlib.Analysis.ODE.PicardLindelof
+public import Mathlib.Geometry.Manifold.IntegralCurve.Transform
+public import Mathlib.Geometry.Manifold.IsManifold.InteriorBoundary
 
 /-!
 # Existence and uniqueness of integral curves
@@ -41,6 +43,8 @@ We state simpler versions of the theorem for boundaryless manifolds as corollari
 
 integral curve, vector field, local existence, uniqueness
 -/
+
+public section
 
 open scoped Topology
 
@@ -78,7 +82,7 @@ theorem exists_isMIntegralCurveAt_of_contMDiffAt [CompleteSpace E]
   refine ⟨(extChartAt I x₀).symm ∘ f,
     Eq.symm (by rw [Function.comp_apply, hf1, PartialEquiv.left_inv _ (mem_extChartAt_source ..)]),
     isMIntegralCurveAt_iff.mpr ⟨s, hs, ?_⟩⟩
-  intros t ht
+  intro t ht
   -- collect useful terms in convenient forms
   let xₜ : M := (extChartAt I x₀).symm (f t) -- `xₜ := γ t`
   have h : HasDerivAt f (x := t) <| fderivWithin ℝ (extChartAt I x₀ ∘ (extChartAt I xₜ).symm)
@@ -107,9 +111,6 @@ theorem exists_isMIntegralCurveAt_of_contMDiffAt [CompleteSpace E]
   rw [← (extChartAt I x₀).right_inv hf3']
   exact hasFDerivWithinAt_tangentCoordChange ⟨hft1, hft2⟩
 
-@[deprecated (since := "2025-08-12")] alias exists_isIntegralCurveAt_of_contMDiffAt :=
-  exists_isMIntegralCurveAt_of_contMDiffAt
-
 /-- Existence of local integral curves for a $C^1$ vector field on a `C^1` manifold without
 boundary. -/
 lemma exists_isMIntegralCurveAt_of_contMDiffAt_boundaryless
@@ -117,9 +118,6 @@ lemma exists_isMIntegralCurveAt_of_contMDiffAt_boundaryless
     (hv : ContMDiffAt I I.tangent 1 (fun x ↦ (⟨x, v x⟩ : TangentBundle I M)) x₀) :
     ∃ γ : ℝ → M, γ t₀ = x₀ ∧ IsMIntegralCurveAt γ v t₀ :=
   exists_isMIntegralCurveAt_of_contMDiffAt t₀ hv BoundarylessManifold.isInteriorPoint
-
-@[deprecated (since := "2025-08-12")] alias exists_isIntegralCurveAt_of_contMDiffAt_boundaryless :=
-  exists_isMIntegralCurveAt_of_contMDiffAt_boundaryless
 
 variable {t₀}
 
@@ -164,7 +162,7 @@ theorem isMIntegralCurveAt_eventuallyEq_of_contMDiffAt (hγt₀ : I.IsInteriorPo
   have heq {g} (hg : IsMIntegralCurveAt g v t₀) :
     g =ᶠ[𝓝 t₀] (extChartAt I (g t₀)).symm ∘ ↑(extChartAt I (g t₀)) ∘ g := by
     apply (hsrc hg).mono
-    intros t ht
+    intro t ht
     rw [Function.comp_apply, Function.comp_apply, PartialEquiv.left_inv _ (hmem ht)]
   -- main proof
   suffices (extChartAt I (γ t₀)) ∘ γ =ᶠ[𝓝 t₀] (extChartAt I (γ' t₀)) ∘ γ' from
@@ -172,18 +170,11 @@ theorem isMIntegralCurveAt_eventuallyEq_of_contMDiffAt (hγt₀ : I.IsInteriorPo
   exact ODE_solution_unique_of_eventually (.of_forall hlip)
     (hdrv hγ rfl) (hdrv hγ' h) (by rw [Function.comp_apply, Function.comp_apply, h])
 
-@[deprecated (since := "2025-08-12")] alias isIntegralCurveAt_eventuallyEq_of_contMDiffAt :=
-  isMIntegralCurveAt_eventuallyEq_of_contMDiffAt
-
 theorem isMIntegralCurveAt_eventuallyEq_of_contMDiffAt_boundaryless [BoundarylessManifold I M]
     (hv : ContMDiffAt I I.tangent 1 (fun x ↦ (⟨x, v x⟩ : TangentBundle I M)) (γ t₀))
     (hγ : IsMIntegralCurveAt γ v t₀) (hγ' : IsMIntegralCurveAt γ' v t₀) (h : γ t₀ = γ' t₀) :
     γ =ᶠ[𝓝 t₀] γ' :=
   isMIntegralCurveAt_eventuallyEq_of_contMDiffAt BoundarylessManifold.isInteriorPoint hv hγ hγ' h
-
-@[deprecated (since := "2025-08-12")] alias
-  isIntegralCurveAt_eventuallyEq_of_contMDiffAt_boundaryless :=
-  isMIntegralCurveAt_eventuallyEq_of_contMDiffAt_boundaryless
 
 variable [T2Space M] {a b : ℝ}
 
@@ -207,7 +198,7 @@ theorem isMIntegralCurveOn_Ioo_eqOn_of_contMDiff (ht₀ : t₀ ∈ Ioo a b)
     -- TODO: shorten this when better API around subtype topology exists
     rw [hs, inter_comm, ← Subtype.image_preimage_val, inter_comm, ← Subtype.image_preimage_val,
       image_subset_image_iff Subtype.val_injective, preimage_setOf_eq]
-    intros t ht
+    intro t ht
     rw [mem_preimage, ← closure_subtype] at ht
     revert ht t
     apply IsClosed.closure_subset (isClosed_eq _ _)
@@ -229,9 +220,6 @@ theorem isMIntegralCurveOn_Ioo_eqOn_of_contMDiff (ht₀ : t₀ ∈ Ioo a b)
     apply (heq.and hmem).mono
     exact fun _ ht ↦ ht
 
-@[deprecated (since := "2025-08-12")] alias isIntegralCurveOn_Ioo_eqOn_of_contMDiff :=
-  isMIntegralCurveOn_Ioo_eqOn_of_contMDiff
-
 theorem isMIntegralCurveOn_Ioo_eqOn_of_contMDiff_boundaryless [BoundarylessManifold I M]
     (ht₀ : t₀ ∈ Ioo a b)
     (hv : ContMDiff I I.tangent 1 (fun x ↦ (⟨x, v x⟩ : TangentBundle I M)))
@@ -239,9 +227,6 @@ theorem isMIntegralCurveOn_Ioo_eqOn_of_contMDiff_boundaryless [BoundarylessManif
     (h : γ t₀ = γ' t₀) : EqOn γ γ' (Ioo a b) :=
   isMIntegralCurveOn_Ioo_eqOn_of_contMDiff
     ht₀ (fun _ _ ↦ BoundarylessManifold.isInteriorPoint) hv hγ hγ' h
-
-@[deprecated (since := "2025-08-12")] alias isIntegralCurveOn_Ioo_eqOn_of_contMDiff_boundaryless :=
-  isMIntegralCurveOn_Ioo_eqOn_of_contMDiff_boundaryless
 
 /-- Global integral curves are unique.
 
@@ -261,16 +246,10 @@ theorem isMIntegralCurve_eq_of_contMDiff (hγt : ∀ t, I.IsInteriorPoint (γ t)
     ((hγ.isMIntegralCurveOn _).mono (subset_univ _))
     ((hγ'.isMIntegralCurveOn _).mono (subset_univ _)) h ht₀
 
-@[deprecated (since := "2025-08-12")] alias isIntegralCurve_eq_of_contMDiff :=
-  isMIntegralCurve_eq_of_contMDiff
-
 theorem isMIntegralCurve_Ioo_eq_of_contMDiff_boundaryless [BoundarylessManifold I M]
     (hv : ContMDiff I I.tangent 1 (fun x ↦ (⟨x, v x⟩ : TangentBundle I M)))
     (hγ : IsMIntegralCurve γ v) (hγ' : IsMIntegralCurve γ' v) (h : γ t₀ = γ' t₀) : γ = γ' :=
   isMIntegralCurve_eq_of_contMDiff (fun _ ↦ BoundarylessManifold.isInteriorPoint) hv hγ hγ' h
-
-@[deprecated (since := "2025-08-12")] alias isIntegralCurve_Ioo_eq_of_contMDiff_boundaryless :=
-  isMIntegralCurve_Ioo_eq_of_contMDiff_boundaryless
 
 /-- For a global integral curve `γ`, if it crosses itself at `a b : ℝ`, then it is periodic with
 period `a - b`. -/
@@ -278,14 +257,11 @@ lemma IsMIntegralCurve.periodic_of_eq [BoundarylessManifold I M]
     (hγ : IsMIntegralCurve γ v)
     (hv : ContMDiff I I.tangent 1 (fun x ↦ (⟨x, v x⟩ : TangentBundle I M)))
     (heq : γ a = γ b) : Periodic γ (a - b) := by
-  intro t
   apply congrFun <|
     isMIntegralCurve_Ioo_eq_of_contMDiff_boundaryless (t₀ := b) hv (hγ.comp_add _) hγ _
   rw [comp_apply, add_sub_cancel, heq]
 
-@[deprecated (since := "2025-08-12")] alias IsIntegralCurve.periodic_of_eq :=
-  IsMIntegralCurve.periodic_of_eq
-
+set_option backward.isDefEq.respectTransparency false in
 /-- A global integral curve is injective xor periodic with positive period. -/
 lemma IsMIntegralCurve.periodic_xor_injective [BoundarylessManifold I M]
     (hγ : IsMIntegralCurve γ v)
@@ -300,12 +276,8 @@ lemma IsMIntegralCurve.periodic_xor_injective [BoundarylessManifold I M]
   refine ⟨|a - b|, ?_, ?_⟩
   · rw [gt_iff_lt, abs_pos, sub_ne_zero]
     exact hne
-  · by_cases hab : a - b < 0
+  · by_cases! hab : a - b < 0
     · rw [abs_of_neg hab, neg_sub]
       exact hγ.periodic_of_eq hv heq.symm
-    · rw [not_lt] at hab
-      rw [abs_of_nonneg hab]
+    · rw [abs_of_nonneg hab]
       exact hγ.periodic_of_eq hv heq
-
-@[deprecated (since := "2025-08-12")] alias IsIntegralCurve.periodic_xor_injective :=
-  IsMIntegralCurve.periodic_xor_injective

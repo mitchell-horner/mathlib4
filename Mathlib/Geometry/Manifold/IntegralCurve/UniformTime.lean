@@ -3,7 +3,9 @@ Copyright (c) 2023 Winston Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Winston Yin
 -/
-import Mathlib.Geometry.Manifold.IntegralCurve.ExistUnique
+module
+
+public import Mathlib.Geometry.Manifold.IntegralCurve.ExistUnique
 
 /-!
 # Uniform time lemma for the global existence of integral curves
@@ -22,6 +24,8 @@ import Mathlib.Geometry.Manifold.IntegralCurve.ExistUnique
 
 integral curve, vector field, global existence
 -/
+
+public section
 
 open scoped Topology
 
@@ -47,9 +51,6 @@ lemma eqOn_of_isMIntegralCurveOn_Ioo [BoundarylessManifold I M]
     exact ⟨neg_lt_zero.mpr hpos, by positivity⟩
   · apply Ioo_subset_Ioo <;> linarith
 
-@[deprecated (since := "2025-08-12")] alias eqOn_of_isIntegralCurveOn_Ioo :=
-  eqOn_of_isMIntegralCurveOn_Ioo
-
 /-- For a family of integral curves `γ : ℝ → ℝ → M` with the same starting point `γ 0 = x` such that
 each `γ a` is defined on `Ioo (-a) a`, the global curve `γ_ext := fun t ↦ γ (|t| + 1) t` agrees
 with each `γ a` on `Ioo (-a) a`. This will help us show that `γ_ext` is a global integral curve. -/
@@ -57,15 +58,12 @@ lemma eqOn_abs_add_one_of_isMIntegralCurveOn_Ioo [BoundarylessManifold I M]
     (hv : ContMDiff I I.tangent 1 (fun x ↦ (⟨x, v x⟩ : TangentBundle I M))) {x : M}
     (γ : ℝ → ℝ → M) (hγx : ∀ a, γ a 0 = x) (hγ : ∀ a > 0, IsMIntegralCurveOn (γ a) v (Ioo (-a) a))
     {a : ℝ} : EqOn (fun t ↦ γ (|t| + 1) t) (γ a) (Ioo (-a) a) := by
-  intros t ht
-  by_cases hlt : |t| + 1 < a
+  intro t ht
+  by_cases! hlt : |t| + 1 < a
   · exact eqOn_of_isMIntegralCurveOn_Ioo hv γ hγx hγ
       (by positivity) hlt.le (abs_lt.mp <| lt_add_one _)
   · exact eqOn_of_isMIntegralCurveOn_Ioo hv γ hγx hγ
-      (neg_lt_self_iff.mp <| lt_trans ht.1 ht.2) (not_lt.mp hlt) ht |>.symm
-
-@[deprecated (since := "2025-08-12")] alias eqOn_abs_add_one_of_isIntegralCurveOn_Ioo :=
-  eqOn_abs_add_one_of_isMIntegralCurveOn_Ioo
+      (neg_lt_self_iff.mp <| lt_trans ht.1 ht.2) hlt ht |>.symm
 
 /-- For a family of integral curves `γ : ℝ → ℝ → M` with the same starting point `γ 0 = x` such that
 each `γ a` is defined on `Ioo (-a) a`, the function `γ_ext := fun t ↦ γ (|t| + 1) t` is a global
@@ -87,10 +85,6 @@ lemma isMIntegralCurve_abs_add_one_of_isMIntegralCurveOn_Ioo [BoundarylessManifo
     rw [abs_lt] at this
     exact Ioo_mem_nhds this.1 this.2
 
-@[deprecated (since := "2025-08-12")] alias
-  isIntegralCurve_abs_add_one_of_isIntegralCurveOn_Ioo :=
-  isMIntegralCurve_abs_add_one_of_isMIntegralCurveOn_Ioo
-
 /-- The existence of a global integral curve is equivalent to the existence of a family of local
 integral curves `γ : ℝ → ℝ → M` with the same starting point `γ 0 = x` such that each `γ a` is
 defined on `Ioo (-a) a`. -/
@@ -103,10 +97,6 @@ lemma exists_isMIntegralCurve_iff_exists_isMIntegralCurveOn_Ioo [BoundarylessMan
   exact ⟨fun t ↦ γ (|t| + 1) t, hγx (|0| + 1),
     isMIntegralCurve_abs_add_one_of_isMIntegralCurveOn_Ioo hv γ hγx (fun a _ ↦  hγ a)⟩
 
-@[deprecated (since := "2025-08-12")] alias
-  exists_isIntegralCurve_iff_exists_isIntegralCurveOn_Ioo :=
-  exists_isMIntegralCurve_iff_exists_isMIntegralCurveOn_Ioo
-
 /-- Let `γ` and `γ'` be integral curves defined on `Ioo a b` and `Ioo a' b'`, respectively. Then,
 `piecewise (Ioo a b) γ γ'` is equal to `γ` and `γ'` in their respective domains.
 `Set.piecewise_eqOn` shows the equality for `γ` by definition, while this lemma shows the equality
@@ -117,7 +107,7 @@ lemma eqOn_piecewise_of_isMIntegralCurveOn_Ioo [BoundarylessManifold I M]
     (hγ' : IsMIntegralCurveOn γ' v (Ioo a' b'))
     (ht₀ : t₀ ∈ Ioo a b ∩ Ioo a' b') (h : γ t₀ = γ' t₀) :
     EqOn (piecewise (Ioo a b) γ γ') γ' (Ioo a' b') := by
-  intros t ht
+  intro t ht
   suffices H : EqOn γ γ' (Ioo (max a a') (min b b')) by
     by_cases hmem : t ∈ Ioo a b
     · rw [piecewise, if_pos hmem]
@@ -128,9 +118,6 @@ lemma eqOn_piecewise_of_isMIntegralCurveOn_Ioo [BoundarylessManifold I M]
     (hγ.mono (Ioo_subset_Ioo (le_max_left ..) (min_le_left ..)))
     (hγ'.mono (Ioo_subset_Ioo (le_max_right ..) (min_le_right ..))) h
   exact ⟨max_lt ht₀.1.1 ht₀.2.1, lt_min ht₀.1.2 ht₀.2.2⟩
-
-@[deprecated (since := "2025-08-12")] alias eqOn_piecewise_of_isIntegralCurveOn_Ioo :=
-  eqOn_piecewise_of_isMIntegralCurveOn_Ioo
 
 /-- The extension of an integral curve by another integral curve is an integral curve.
 
@@ -146,7 +133,7 @@ lemma isMIntegralCurveOn_piecewise [BoundarylessManifold I M]
     (hγ' : IsMIntegralCurveOn γ' v (Ioo a' b')) {t₀ : ℝ}
     (ht₀ : t₀ ∈ Ioo a b ∩ Ioo a' b') (h : γ t₀ = γ' t₀) :
     IsMIntegralCurveOn (piecewise (Ioo a b) γ γ') v (Ioo a b ∪ Ioo a' b') := by
-  intros t ht
+  intro t ht
   by_cases hmem : t ∈ Ioo a b
   · rw [piecewise, if_pos hmem]
     apply hγ t hmem |>.hasMFDerivAt (Ioo_mem_nhds hmem.1 hmem.2) |>.hasMFDerivWithinAt
@@ -166,9 +153,6 @@ lemma isMIntegralCurveOn_piecewise [BoundarylessManifold I M]
       eqOn_piecewise_of_isMIntegralCurveOn_Ioo hv hγ hγ' ht₀ h⟩
     rw [(isOpen_Ioo.union isOpen_Ioo).nhdsWithin_eq ht']
     exact Ioo_mem_nhds (ht hmem).1 (ht hmem).2
-
-@[deprecated (since := "2025-08-12")] alias isIntegralCurveOn_piecewise :=
-  isMIntegralCurveOn_piecewise
 
 /-- If there exists `ε > 0` such that the local integral curve at each point `x : M` is defined at
 least on an open interval `Ioo (-ε) ε`, then every point on `M` has a global integral curve
@@ -229,6 +213,3 @@ lemma exists_isMIntegralCurve_of_isMIntegralCurveOn [BoundarylessManifold I M]
   exact (isMIntegralCurveOn_piecewise (t₀ := -(asup - ε / 2)) hv hγ hγ1
       ⟨⟨neg_lt_neg hlt, by linarith⟩, ⟨by linarith, by linarith⟩⟩ heq1.symm).mono
     (union_comm _ _ ▸ Ioo_subset_Ioo_union_Ioo (by linarith) (by linarith) le_rfl)
-
-@[deprecated (since := "2025-08-12")] alias exists_isIntegralCurve_of_isIntegralCurveOn :=
-  exists_isMIntegralCurve_of_isMIntegralCurveOn

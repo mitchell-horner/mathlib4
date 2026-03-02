@@ -3,12 +3,14 @@ Copyright (c) 2024 Antoine Chambert-Loir. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Antoine Chambert-Loir
 -/
-import Mathlib.Algebra.Pointwise.Stabilizer
-import Mathlib.Data.Setoid.Partition
-import Mathlib.GroupTheory.GroupAction.Pointwise
-import Mathlib.GroupTheory.GroupAction.SubMulAction
-import Mathlib.GroupTheory.Index
-import Mathlib.Tactic.IntervalCases
+module
+
+public import Mathlib.Algebra.Pointwise.Stabilizer
+public import Mathlib.Data.Setoid.Partition
+public import Mathlib.GroupTheory.GroupAction.Pointwise
+public import Mathlib.GroupTheory.GroupAction.SubMulAction
+public import Mathlib.GroupTheory.Index
+public import Mathlib.Tactic.IntervalCases
 
 /-! # Blocks
 
@@ -20,7 +22,7 @@ Given `SMul G X`, an action of a type `G` on a type `X`, we define
   definition `MulAction.IsBlock.def_one`
 
 - a bunch of lemmas that give examples of “trivial” blocks : ⊥, ⊤, singletons,
-  and non trivial blocks: orbit of the group, orbit of a normal subgroup…
+  and non-trivial blocks: orbit of the group, orbit of a normal subgroup…
 
 The non-existence of nontrivial blocks is the definition of primitive actions.
 
@@ -47,6 +49,8 @@ We follow [Wielandt-1964].
 
 -/
 
+@[expose] public section
+
 open Set
 open scoped Pointwise
 
@@ -56,6 +60,7 @@ section orbits
 
 variable {G : Type*} [Group G] {X : Type*} [MulAction G X]
 
+set_option backward.isDefEq.respectTransparency false in
 @[to_additive]
 theorem orbit.eq_or_disjoint (a b : X) :
     orbit G a = orbit G b ∨ Disjoint (orbit G a) (orbit G b) := by
@@ -78,7 +83,7 @@ theorem IsPartition.of_orbits :
   · intro x
     exact ⟨_, ⟨x, rfl⟩, mem_orbit_self x⟩
   · rintro ⟨a, ha : orbit G a = ∅⟩
-    exact (MulAction.orbit_nonempty a).ne_empty ha
+    exact (MulAction.nonempty_orbit a).ne_empty ha
 
 end orbits
 
@@ -168,6 +173,7 @@ def IsBlock (B : Set X) := ∀ ⦃g₁ g₂ : G⦄, g₁ • B ≠ g₂ • B �
 
 variable {G} {s : Set G} {g g₁ g₂ : G}
 
+set_option backward.isDefEq.respectTransparency false in
 @[to_additive]
 lemma isBlock_iff_smul_eq_smul_of_nonempty :
     IsBlock G B ↔ ∀ ⦃g₁ g₂ : G⦄, (g₁ • B ∩ g₂ • B).Nonempty → g₁ • B = g₂ • B := by
@@ -182,6 +188,7 @@ lemma isBlock_iff_smul_eq_smul_or_disjoint :
     IsBlock G B ↔ ∀ g₁ g₂ : G, g₁ • B = g₂ • B ∨ Disjoint (g₁ • B) (g₂ • B) :=
   forall₂_congr fun _ _ ↦ or_iff_not_imp_left.symm
 
+set_option backward.isDefEq.respectTransparency false in
 @[to_additive]
 lemma IsBlock.smul_eq_smul_of_subset (hB : IsBlock G B) (hg : g₁ • B ⊆ g₂ • B) :
     g₁ • B = g₂ • B := by
@@ -218,6 +225,7 @@ lemma IsFixedBlock.isBlock (hfB : IsFixedBlock G B) : IsBlock G B := by simp [Is
 @[to_additive (attr := simp) /-- The empty set is a block. -/]
 lemma IsBlock.empty : IsBlock G (∅ : Set X) := by simp [IsBlock]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A singleton is a block. -/
 @[to_additive /-- A singleton is a block. -/]
 lemma IsBlock.singleton : IsBlock G ({a} : Set X) := by simp [IsBlock]
@@ -258,6 +266,7 @@ lemma isBlock_iff_disjoint_smul_of_ne :
   simp only [disjoint_smul_set_right, ne_eq, ← inv_smul_eq_iff, smul_smul] at h ⊢
   exact hB h
 
+set_option backward.isDefEq.respectTransparency false in
 @[to_additive]
 lemma isBlock_iff_smul_eq_of_nonempty :
     IsBlock G B ↔ ∀ ⦃g : G⦄, (g • B ∩ B).Nonempty → g • B = B := by
@@ -293,7 +302,7 @@ lemma isInvariantBlock_iff_isFixedBlock : IsInvariantBlock G B ↔ IsFixedBlock 
 @[to_additive /-- An invariant block of a group action is a fixed block. -/]
 alias ⟨IsInvariantBlock.isFixedBlock, _⟩ := isInvariantBlock_iff_isFixedBlock
 
-/-- An invariant block  of a group action is a block. -/
+/-- An invariant block of a group action is a block. -/
 @[to_additive /-- An invariant block of a group action is a block. -/]
 lemma IsInvariantBlock.isBlock (hB : IsInvariantBlock G B) : IsBlock G B := hB.isFixedBlock.isBlock
 
@@ -494,6 +503,7 @@ Annoyingly, it seems like the following two lemmas cannot be unified.
 section Left
 variable [MulAction G H] [IsScalarTower G H H]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- See `MulAction.isBlock_subgroup'` for a version that works for the right action of a group on
 itself. -/
 @[to_additive /-- See `AddAction.isBlock_subgroup'` for a version that works for the right action
@@ -511,6 +521,7 @@ variable [MulAction G H] [IsScalarTower G Hᵐᵒᵖ H]
 
 open MulOpposite
 
+set_option backward.isDefEq.respectTransparency false in
 /-- See `MulAction.isBlock_subgroup` for a version that works for the left action of a group on
 itself. -/
 @[to_additive /-- See `AddAction.isBlock_subgroup` for a version that works for the left action
@@ -669,11 +680,11 @@ namespace IsBlock
 variable [IsPretransitive G X] {B : Set X}
 
 @[to_additive]
-theorem ncard_block_eq_relindex (hB : IsBlock G B) {x : X} (hx : x ∈ B) :
-    B.ncard = (stabilizer G x).relindex (stabilizer G B) := by
+theorem ncard_block_eq_relIndex (hB : IsBlock G B) {x : X} (hx : x ∈ B) :
+    B.ncard = (stabilizer G x).relIndex (stabilizer G B) := by
   have key : (stabilizer G x).subgroupOf (stabilizer G B) = stabilizer (stabilizer G B) x := by
     ext; rfl
-  rw [Subgroup.relindex, key, index_stabilizer, hB.orbit_stabilizer_eq hx]
+  rw [Subgroup.relIndex, key, index_stabilizer, hB.orbit_stabilizer_eq hx]
 
 /-- The cardinality of the ambient space is the product of the cardinality of a block
   by the cardinality of the set of translates of that block -/
@@ -683,8 +694,8 @@ theorem ncard_block_eq_relindex (hB : IsBlock G B) {x : X} (hx : x ∈ B) :
 theorem ncard_block_mul_ncard_orbit_eq (hB : IsBlock G B) (hB_ne : B.Nonempty) :
     Set.ncard B * Set.ncard (orbit G B) = Nat.card X := by
   obtain ⟨x, hx⟩ := hB_ne
-  rw [ncard_block_eq_relindex hB hx, ← index_stabilizer,
-      Subgroup.relindex_mul_index (hB.stabilizer_le hx), index_stabilizer_of_transitive]
+  rw [ncard_block_eq_relIndex hB hx, ← index_stabilizer,
+      Subgroup.relIndex_mul_index (hB.stabilizer_le hx), index_stabilizer_of_transitive]
 
 /-- The cardinality of a block divides the cardinality of the ambient type -/
 @[to_additive /-- The cardinality of a block divides the cardinality of the ambient type -/]
@@ -718,7 +729,7 @@ theorem subsingleton_of_card_lt [Finite X] (hB : IsBlock G B)
     | inr h =>
       obtain ⟨a, ha⟩ := h; rw [ha]; exact Set.subsingleton_singleton
   cases Set.eq_empty_or_nonempty B with
-  | inl h => rw [h, Set.ncard_empty]; norm_num
+  | inl h => rw [h, Set.ncard_empty]; simp
   | inr h =>
     rw [← hB.ncard_block_mul_ncard_orbit_eq h, lt_iff_not_ge] at hB'
     rw [← not_le]
@@ -745,7 +756,7 @@ theorem of_subset (a : X) (hfB : B.Finite) :
     obtain ⟨b, hb : b ∈ B⟩ := hfB_ne
     obtain ⟨k, hk : k • b = a⟩ := exists_smul_eq G b a
     apply Set.Finite.subset (Set.Finite.map _ hfB) (hB'₀ k ⟨b, hb, hk⟩)
-  have hag : ∀ g : G, a ∈ g • B' → B' ≤ g • B' :=  by
+  have hag : ∀ g : G, a ∈ g • B' → B' ≤ g • B' := by
     intro g hg x hx
     -- a = g • b; b ∈ B'; a ∈ k • B → b ∈ k • B
     simp only [B', Set.mem_iInter, Set.mem_smul_set_iff_inv_smul_mem,
